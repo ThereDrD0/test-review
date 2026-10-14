@@ -1,0 +1,33 @@
+name: RSI Validator
+
+on:
+  push:
+    branches: [ master, staging, stable ]
+  merge_group:
+  pull_request:
+    types: [ opened, reopened, synchronize ]
+    paths:
+      - '**.rsi/**'
+
+# Sunrise added start - отменяем устаревший запуск этой проверки для того же PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+# Sunrise added end
+
+jobs:
+  validate_rsis:
+    name: Validate RSIs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Python dependencies
+        run: |
+          pip3 install --ignore-installed --user pillow jsonschema
+      - name: Validate RSIs
+        run: |
+          python3 Tools/Schemas/validate_rsis.py Resources/Prototypes/

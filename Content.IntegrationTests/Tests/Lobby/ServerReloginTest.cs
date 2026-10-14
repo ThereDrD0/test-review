@@ -1,0 +1,73 @@
+using System.Linq;
+using Content.IntegrationTests.Fixtures;
+using Content.Shared.CCVar;
+using Robust.Server.Player;
+using Robust.Shared.Configuration;
+using Robust.Shared.Network;
+namespace Content.IntegrationTests.Tests.Lobby;
+
+public sealed class ServerReloginTest : GameTest
+{
+    public override PoolSettings PoolSettings => new PoolSettings
+    {
+        Connected = true,
+        DummyTicker = false
+    };
+
+    [Test]
+    public async Task Relogin()
+    {
+        var pair = Pair;
+        var server = pair.Server;
+        var client = pair.Client;
+        var originalMaxPlayers = 0;
+        string username = null;
+
+        var serverConfig = server.ResolveDependency<IConfigurationManager>();
+        var serverPlayerMgr = server.ResolveDependency<IPlayerManager>();
+        var clientNetManager = client.ResolveDependency<IClientNetManager>();
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.That(serverPlayerMgr.PlayerCount, Is.EqualTo(1));
+            originalMaxPlayers = serverConfig.GetCVar(CCVars.SoftMaxPlayers);
+            username = serverPlayerMgr.Sessions.First().Name;
+
+            //No new players are allowed, but since our client was already playing, they should be able to get in
+            serverConfig.SetCVar(CCVars.SoftMaxPlayers, 0);
+        });
+
+        await client.WaitAssertion(() =>
+        {
+            clientNetManager.ClientDisconnect("For testing");
+        });
+
+        await pair.RunTicksSync(20);
+
+        await server.WaitAssertion(() =>
+        {
+            Assert.That(serverPlayerMgr.PlayerCount, Is.EqualTo(0));
+        });
+        client.SetConnectTarget(server);
+        // Sunrise edit start - fix RobustToolbox 270.1.0 run level transitions
+        var baseClient = client.ResolveDependency<Robust.Client.IBaseClient>();
+        await client.WaitPost(() =>
+        {
+            baseClient.PlayerNameOverride = username;
+            baseClient.ConnectToServer(new System.Net.DnsEndPoint("localhost", 1212));
+        });
+        // Sunrise edit end
+
+        await pair.RunTicksSync(20);
+
+        await server.WaitAssertion(() =>
+        {
+
+            // Check that we were able to reconnect
+            Assert.That(serverPlayerMgr.PlayerCount, Is.EqualTo(1));
+
+            //Put the cvar back, so other tests can still use this server
+            serverConfig.SetCVar(CCVars.SoftMaxPlayers, originalMaxPlayers);
+        });
+    }
+}

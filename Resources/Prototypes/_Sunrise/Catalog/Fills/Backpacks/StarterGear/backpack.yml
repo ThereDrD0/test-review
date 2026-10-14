@@ -1,0 +1,34 @@
+- type: entity
+  parent: ClothingBackpackSyndie
+  id: ClothingBackpackSyndieAJ100Filled
+  name: AJ-100 kit
+  description: Includes an AJ-100 submachine gun and two magazines of ammunition.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: PouchBackpackPockets
+        - id: WeaponAJ100Biocode
+        - id: MagazinePistolSubMachineGun
+        - id: MagazinePistol40SubMachineGunSP
+        - id: MagazineRifleSP
+        - id: MagazineLightRifleSP
+        - id: MagazinePistol40SP
+        - id: MagazinePistolHighCapacitySP
+        - id: MagazinePistol
+
+- type: entity
+  parent: ClothingBackpackSyndie
+  id: ClothingBackpackSyndieSIAR52Filled
+  name: SIAR-52 kit
+  description: Includes a SIAR-52 machine gun and two magazines of ammunition.
+  components:
+  - type: EntityTableContainerFill
+    containers:
+      storagebase: !type:AllSelector
+        children:
+        - id: PouchBackpackPockets
+        - id: WeaponSIAR52Biocode
+        - id: CaselessAmmoKit
+        - id: CaselessAmmoKit

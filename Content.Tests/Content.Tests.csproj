@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\bin\Content.Tests\</OutputPath>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <Import Project="../MSBuild/Content.props" />
+  <ItemGroup>
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <Import Project="..\RobustToolbox\Imports\Client.props" />
+  <Import Project="..\RobustToolbox\Imports\Server.props" />
+  <Import Project="..\RobustToolbox\Imports\Shared.props" />
+  <Import Project="..\RobustToolbox\Imports\Testing.props" />
+  <ItemGroup>
+    <ProjectReference Include="..\Content.Client\Content.Client.csproj" />
+    <ProjectReference Include="..\Content.Server\Content.Server.csproj" />
+    <ProjectReference Include="..\Content.Shared\Content.Shared.csproj" />
+  </ItemGroup>
+  <PropertyGroup Condition="Exists('..\SunrisePrivate\Content.Tests') And Exists('..\SunrisePrivate\Content.Server') And Exists('..\SunrisePrivate\Content.Shared')">
+    <SunrisePrivateTestsEnabled>true</SunrisePrivateTestsEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(SunrisePrivateTestsEnabled)' == 'true'">
+    <DefineConstants>$(DefineConstants);SUNRISE_PRIVATE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(SunrisePrivateTestsEnabled)' == 'true'">
+    <Compile Include="..\SunrisePrivate\Content.Tests\**\*.cs"
+             Link="SunrisePrivate\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Import Project="..\RobustToolbox\MSBuild\Robust.Properties.targets" />
+</Project>
